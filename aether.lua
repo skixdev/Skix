@@ -1,53 +1,52 @@
---// AETHER UNIVERSAL EXPLOIT - 2025
---// UI: Fluent + Acrylic Blur | Full ESP | Smooth Aimbot | FPS Boost
---// Creado para Modo Bypass
+--// AETHER UNIVERSAL EXPLOIT - FIXED 2025
+--// UI: Rayfield (Siempre Online) | Full ESP | Smooth Aimbot
+--// Compatible: Synapse X, KRNL, Fluxus, Delta
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
---// Configuración Global
+--// Config
 getgenv().Aether = {
     Aimbot = { Enabled = false, Smoothness = 0.15, FOV = 100, TeamCheck = true, WallCheck = true, Priority = "Head" },
     ESP = { Enabled = false, Name = true, Distance = true, Health = true, Box = true, Tracer = true },
     Others = { FPSBoost = false, InfJump = false, Speed = 16, Noclip = false, ClickTP = false }
 }
 
---// Cargar Fluent UI (Synapse/Fluxus)
-local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/z1nkio/Fluent/main/Fluent.lua"))()
-local Window = Fluent:CreateWindow({
-    Title = "Aether Exploit",
-    SubTitle = "Universal 2025",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = true,
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.RightControl
+--// CARGAR RAYFIELD UI (100% ONLINE 2025)
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Aether Exploit",
+    LoadingTitle = "Cargando Aether...",
+    LoadingSubtitle = "Universal 2025",
+    ConfigurationSaving = { Enabled = true, FolderName = "AetherConfig" },
+    Discord = { Enabled = false },
+    KeySystem = false
 })
 
 --// Pestañas
-local AimbotTab = Window:AddTab({ Title = "Aimbot", Icon = "crosshair" })
-local ESPTab = Window:AddTab({ Title = "ESP", Icon = "eye" })
-local OthersTab = Window:AddTab({ Title = "Others", Icon = "zap" })
+local AimbotTab = Window:CreateTab("Aimbot", 4483362458)
+local ESPTab = Window:CreateTab("ESP", 4483362458)
+local OthersTab = Window:CreateTab("Others", 4483362458)
 
---// Funciones de Aimbot
-local function GetClosestPlayer()
-    local Closest, Distance = nil, math.huge
-    for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-            local Root = Player.Character.HumanoidRootPart
-            local Head = Player.Character:FindFirstChild("Head") or Root
-            local Pos, OnScreen = Camera:WorldToViewportPoint(Head.Position)
-            local Dist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(Pos.X, Pos.Y)).Magnitude
+--// Aimbot
+local function GetClosest()
+    local Closest, Dist = nil, math.huge
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local root = p.Character.HumanoidRootPart
+            local head = p.Character:FindFirstChild("Head") or root
+            local pos, onscreen = Camera:WorldToViewportPoint(head.Position)
+            local mouseDist = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(pos.X, pos.Y)).Magnitude
 
-            if OnScreen and Dist < getgenv().Aether.Aimbot.FOV and Dist < Distance then
-                if not getgenv().Aether.Aimbot.TeamCheck or Player.Team ~= LocalPlayer.Team then
-                    if not getgenv().Aether.Aimbot.WallCheck or #Camera:GetPartsObscuringTarget({Head.Position}, {LocalPlayer.Character, Player.Character}) == 0 then
-                        Closest, Distance = Player, Dist
+            if onscreen and mouseDist < getgenv().Aether.Aimbot.FOV and mouseDist < Dist then
+                if not getgenv().Aether.Aimbot.TeamCheck or p.Team ~= LocalPlayer.Team then
+                    if not getgenv().Aether.Aimbot.WallCheck or #Camera:GetPartsObscuringTarget({head.Position}, {LocalPlayer.Character, p.Character}) == 0 then
+                        Closest, Dist = p, mouseDist
                     end
                 end
             end
@@ -56,246 +55,174 @@ local function GetClosestPlayer()
     return Closest
 end
 
-local function SmoothAim(TargetPos)
-    local MousePos = Vector2.new(Mouse.X, Mouse.Y)
-    local TargetScreen = Camera:WorldToViewportPoint(TargetPos)
-    local ScreenPos = Vector2.new(TargetScreen.X, TargetScreen.Y)
-    local Delta = (ScreenPos - MousePos) * getgenv().Aether.Aimbot.Smoothness
-    mousemoverel(Delta.X, Delta.Y)
-end
-
---// Aimbot Loop
 RunService.RenderStepped:Connect(function()
     if getgenv().Aether.Aimbot.Enabled and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
-        local Target = GetClosestPlayer()
-        if Target and Target.Character then
-            local Part = Target.Character:FindFirstChild(getgenv().Aether.Aimbot.Priority) or Target.Character.HumanoidRootPart
-            SmoothAim(Part.Position)
+        local target = GetClosest()
+        if target and target.Character then
+            local part = target.Character:FindFirstChild(getgenv().Aether.Aimbot.Priority) or target.Character.HumanoidRootPart
+            local screen = Camera:WorldToViewportPoint(part.Position)
+            local delta = Vector2.new(screen.X, screen.Y) - Vector2.new(Mouse.X, Mouse.Y)
+            mousemoverel(delta.X * getgenv().Aether.Aimbot.Smoothness, delta.Y * getgenv().Aether.Aimbot.Smoothness)
         end
     end
 end)
 
---// Dibujar FOV Circle
-local FOVCircle = Drawing.new("Circle")
-FOVCircle.Transparency = 0.7
-FOVCircle.Thickness = 2
-FOVCircle.Color = Color3.fromRGB(255, 0, 100)
-FOVCircle.Filled = false
-FOVCircle.Radius = getgenv().Aether.Aimbot.FOV
-FOVCircle.Visible = false
+--// FOV Circle
+local FOV = Drawing.new("Circle")
+FOV.Radius = 100
+FOV.Color = Color3.fromRGB(255, 100, 100)
+FOV.Thickness = 2
+FOV.Filled = false
+FOV.Transparency = 0.8
 
 RunService.RenderStepped:Connect(function()
-    FOVCircle.Position = Vector2.new(Mouse.X, Mouse.Y + 36)
-    FOVCircle.Radius = getgenv().Aether.Aimbot.FOV
-    FOVCircle.Visible = getgenv().Aether.Aimbot.Enabled
+    FOV.Position = Vector2.new(Mouse.X, Mouse.Y + 36)
+    FOV.Radius = getgenv().Aether.Aimbot.FOV
+    FOV.Visible = getgenv().Aether.Aimbot.Enabled
 end)
 
---// ESP System
-local ESPObjects = {}
+--// ESP
+local ESP = {}
+local function AddESP(p)
+    if ESP[p] or p == LocalPlayer then return end
+    local box = Drawing.new("Square")
+    local tracer = Drawing.new("Line")
+    local name = Drawing.new("Text")
+    local dist = Drawing.new("Text")
+    local health = Drawing.new("Text")
 
-local function CreateESP(Player)
-    if ESPObjects[Player] then return end
+    box.Thickness = 2; box.Filled = false; box.Color = Color3.new(0,1,0)
+    tracer.Thickness = 1.5; tracer.Color = Color3.new(0,1,0)
+    name.Size = 14; name.Center = true; name.Outline = true
+    dist.Size = 13; dist.Center = true; dist.Outline = true
+    health.Size = 13; health.Center = true; health.Outline = true
 
-    local Box = Drawing.new("Square")
-    Box.Thickness = 2
-    Box.Color = Color3.fromRGB(0, 255, 0)
-    Box.Filled = false
-    Box.Transparency = 1
-
-    local Tracer = Drawing.new("Line")
-    Tracer.Thickness = 1.5
-    Tracer.Color = Color3.fromRGB(0, 255, 0)
-
-    local Name = Drawing.new("Text")
-    Name.Size = 14
-    Name.Center = true
-    Name.Outline = true
-    Name.Font = 2
-
-    local Distance = Drawing.new("Text")
-    Distance.Size = 13
-    Distance.Center = true
-    Distance.Outline = true
-    Distance.Font = 2
-
-    local Health = Drawing.new("Text")
-    Health.Size = 13
-    Health.Center = true
-    Health.Outline = true
-    Health.Font = 2
-
-    ESPObjects[Player] = { Box = Box, Tracer = Tracer, Name = Name, Distance = Distance, Health = Health }
+    ESP[p] = {box=box, tracer=tracer, name=name, dist=dist, health=health}
 end
 
-local function UpdateESP()
-    for Player, Drawings in pairs(ESPObjects) do
-        if Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character:FindFirstChild("HumanoidRootPart") then
-            local Root = Player.Character.HumanoidRootPart
-            local Head = Player.Character:FindFirstChild("Head") or Root
-            local Humanoid = Player.Character.Humanoid
-            local Pos, OnScreen = Camera:WorldToViewportPoint(Root.Position)
-            local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
-            local LegPos = Camera:WorldToViewportPoint(Root.Position - Vector3.new(0, 3, 0))
+for _, p in ipairs(Players:GetPlayers()) do AddESP(p) end
+Players.PlayerAdded:Connect(AddESP)
 
-            local BoxSize = Vector2.new(2200 / Pos.Z, HeadPos.Y - LegPos.Y)
-            local BoxPos = Vector2.new(Pos.X - BoxSize.X / 2, Pos.Y - BoxSize.Y / 2)
+RunService.RenderStepped:Connect(function()
+    for p, draw in pairs(ESP) do
+        if p.Character and p.Character:FindFirstChild("Humanoid") and p.Character:FindFirstChild("HumanoidRootPart") then
+            local root = p.Character.HumanoidRootPart
+            local head = p.Character:FindFirstChild("Head") or root
+            local hum = p.Character.Humanoid
+            local pos, onscreen = Camera:WorldToViewportPoint(root.Position)
+            local headpos = Camera:WorldToViewportPoint(head.Position + Vector3.new(0,0.5,0))
+            local legpos = Camera:WorldToViewportPoint(root.Position - Vector3.new(0,3,0))
+            local size = Vector2.new(2200 / pos.Z, headpos.Y - legpos.Y)
+            local boxpos = Vector2.new(pos.X - size.X/2, pos.Y - size.Y/2)
+            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - root.Position).Magnitude
 
-            local Distance = (LocalPlayer.Character.HumanoidRootPart.Position - Root.Position).Magnitude
-
-            Drawings.Box.Size = BoxSize
-            Drawings.Box.Position = BoxPos
-            Drawings.Box.Visible = getgenv().Aether.ESP.Box and OnScreen
-
-            Drawings.Tracer.From = Vector2.new(Mouse.X, Camera.ViewportSize.Y)
-            Drawings.Tracer.To = Vector2.new(Pos.X, Pos.Y + 36)
-            Drawings.Tracer.Visible = getgenv().Aether.ESP.Tracer and OnScreen
-
-            Drawings.Name.Text = Player.DisplayName
-            Drawings.Name.Position = Vector2.new(Pos.X, HeadPos.Y - 20)
-            Drawings.Name.Visible = getgenv().Aether.ESP.Name and OnScreen
-
-            Drawings.Distance.Text = math.floor(Distance) .. "m"
-            Drawings.Distance.Position = Vector2.new(Pos.X, LegPos.Y + 5)
-            Drawings.Distance.Visible = getgenv().Aether.ESP.Distance and OnScreen
-
-            Drawings.Health.Text = math.floor(Humanoid.Health) .. "/" .. Humanoid.MaxHealth
-            Drawings.Health.Position = Vector2.new(BoxPos.X - 30, BoxPos.Y)
-            Drawings.Health.Visible = getgenv().Aether.ESP.Health and OnScreen
-
-            Drawings.Health.Color = Color3.fromHSV((Humanoid.Health / Humanoid.MaxHealth) * 0.33, 1, 1)
+            draw.box.Size = size; draw.box.Position = boxpos; draw.box.Visible = getgenv().Aether.ESP.Box and onscreen
+            draw.tracer.From = Vector2.new(Mouse.X, Camera.ViewportSize.Y); draw.tracer.To = Vector2.new(pos.X, pos.Y + 36); draw.tracer.Visible = getgenv().Aether.ESP.Tracer and onscreen
+            draw.name.Text = p.DisplayName; draw.name.Position = Vector2.new(pos.X, headpos.Y - 20); draw.name.Visible = getgenv().Aether.ESP.Name and onscreen
+            draw.dist.Text = math.floor(distance).."m"; draw.dist.Position = Vector2.new(pos.X, legpos.Y + 5); draw.dist.Visible = getgenv().Aether.ESP.Distance and onscreen
+            draw.health.Text = math.floor(hum.Health).."/"..hum.MaxHealth; draw.health.Position = Vector2.new(boxpos.X - 30, boxpos.Y); draw.health.Visible = getgenv().Aether.ESP.Health and onscreen
+            draw.health.Color = Color3.fromHSV((hum.Health/hum.MaxHealth)*0.33, 1, 1)
         else
-            for _, v in pairs(Drawings) do v.Visible = false end
+            for _, v in pairs(draw) do v.Visible = false end
         end
     end
-end
-
-for _, Player in ipairs(Players:GetPlayers()) do
-    if Player ~= LocalPlayer then CreateESP(Player) end
-end
-
-Players.PlayerAdded:Connect(function(Player)
-    Player.CharacterAdded:Connect(function() CreateESP(Player) end)
 end)
 
-RunService.RenderStepped:Connect(UpdateESP)
-
---// UI: Aimbot
-AimbotTab:AddToggle("aimbot_enabled", {
-    Title = "Aimbot",
-    Default = false,
+--// UI CONTROLES
+AimbotTab:CreateToggle({
+    Name = "Aimbot",
+    CurrentValue = false,
     Callback = function(v) getgenv().Aether.Aimbot.Enabled = v end
 })
 
-AimbotTab:AddSlider("aimbot_smooth", {
-    Title = "Suavidad",
-    Min = 0.05, Max = 0.5, Default = 0.15, Rounding = 2,
+AimbotTab:CreateSlider({
+    Name = "Suavidad",
+    Range = {0.05, 0.5},
+    Increment = 0.01,
+    CurrentValue = 0.15,
     Callback = function(v) getgenv().Aether.Aimbot.Smoothness = v end
 })
 
-AimbotTab:AddSlider("aimbot_fov", {
-    Title = "FOV",
-    Min = 10, Max = 300, Default = 100,
+AimbotTab:CreateSlider({
+    Name = "FOV",
+    Range = {10, 300},
+    Increment = 5,
+    CurrentValue = 100,
     Callback = function(v) getgenv().Aether.Aimbot.FOV = v end
 })
 
-AimbotTab:AddDropdown("aimbot_priority", {
-    Title = "Prioridad",
-    Values = {"Head", "HumanoidRootPart", "UpperTorso"},
-    Default = "Head",
+AimbotTab:CreateDropdown({
+    Name = "Prioridad",
+    Options = {"Head", "HumanoidRootPart", "UpperTorso"},
+    CurrentOption = "Head",
     Callback = function(v) getgenv().Aether.Aimbot.Priority = v end
 })
 
-AimbotTab:AddToggle("aimbot_teamcheck", { Title = "Team Check", Default = true, Callback = function(v) getgenv().Aether.Aimbot.TeamCheck = v end })
-AimbotTab:AddToggle("aimbot_wallcheck", { Title = "Wall Check", Default = true, Callback = function(v) getgenv().Aether.Aimbot.WallCheck = v end })
+-- ESP Toggles
+ESPTab:CreateToggle({ Name = "Box", CurrentValue = true, Callback = function(v) getgenv().Aether.ESP.Box = v end })
+ESPTab:CreateToggle({ Name = "Tracer", CurrentValue = true, Callback = function(v) getgenv().Aether.ESP.Tracer = v end })
+ESPTab:CreateToggle({ Name = "Nombre", CurrentValue = true, Callback = function(v) getgenv().Aether.ESP.Name = v end })
+ESPTab:CreateToggle({ Name = "Distancia", CurrentValue = true, Callback = function(v) getgenv().Aether.ESP.Distance = v end })
+ESPTab:CreateToggle({ Name = "Salud", CurrentValue = true, Callback = function(v) getgenv().Aether.ESP.Health = v end })
 
---// UI: ESP
-ESPTab:AddToggle("esp_enabled", { Title = "ESP General", Default = false, Callback = function(v) getgenv().Aether.ESP.Enabled = v end })
-ESPTab:AddToggle("esp_name", { Title = "Nombre", Default = true, Callback = function(v) getgenv().Aether.ESP.Name = v end })
-ESPTab:AddToggle("esp_distance", { Title = "Distancia", Default = true, Callback = function(v) getgenv().Aether.ESP.Distance = v end })
-ESPTab:AddToggle("esp_health", { Title = "Salud", Default = true, Callback = function(v) getgenv().Aether.ESP.Health = v end })
-ESPTab:AddToggle("esp_box", { Title = "Box 2D", Default = true, Callback = function(v) getgenv().Aether.ESP.Box = v end })
-ESPTab:AddToggle("esp_tracer", { Title = "Tracer", Default = true, Callback = function(v) getgenv().Aether.ESP.Tracer = v end })
-
---// UI: Others
-OthersTab:AddToggle("fps_boost", {
-    Title = "FPS Boost",
-    Default = false,
+-- Others
+OthersTab:CreateToggle({
+    Name = "FPS Boost",
+    CurrentValue = false,
     Callback = function(v)
         getgenv().Aether.Others.FPSBoost = v
         if v then
             settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
             for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
-                    v.Material = Enum.Material.SmoothPlastic
-                    v.Reflectance = 0
-                elseif v:IsA("Decal") then
-                    v.Transparency = 1
-                end
+                if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then v.Material = Enum.Material.SmoothPlastic; v.Reflectance = 0
+                elseif v:IsA("Decal") then v.Transparency = 1 end
             end
         end
     end
 })
 
-OthersTab:AddToggle("inf_jump", {
-    Title = "Infinite Jump",
-    Default = false,
+OthersTab:CreateToggle({
+    Name = "Infinite Jump",
+    CurrentValue = false,
     Callback = function(v)
         getgenv().Aether.Others.InfJump = v
         if v then
             UserInputService.JumpRequest:Connect(function()
-                if getgenv().Aether.Others.InfJump then
-                    LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-                end
+                LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
             end)
         end
     end
 })
 
-OthersTab:AddSlider("walkspeed", {
-    Title = "WalkSpeed",
-    Min = 16, Max = 200, Default = 16,
+OthersTab:CreateSlider({
+    Name = "WalkSpeed",
+    Range = {16, 200},
+    Increment = 1,
+    CurrentValue = 16,
     Callback = function(v)
-        getgenv().Aether.Others.Speed = v
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        if LocalPlayer.Character then
             LocalPlayer.Character.Humanoid.WalkSpeed = v
         end
     end
 })
 
-OthersTab:AddToggle("noclip", {
-    Title = "Noclip",
-    Default = false,
+OthersTab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
     Callback = function(v)
         getgenv().Aether.Others.Noclip = v
         if v then
             RunService.Stepped:Connect(function()
-                if getgenv().Aether.Others.Noclip and LocalPlayer.Character then
-                    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then part.CanCollide = false end
                 end
             end)
         end
     end
 })
 
-OthersTab:AddToggle("click_tp", {
-    Title = "Click TP (CTRL + Click)",
-    Default = false,
-    Callback = function(v)
-        getgenv().Aether.Others.ClickTP = v
-        if v then
-            Mouse.Button1Down:Connect(function()
-                if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) and LocalPlayer.Character then
-                    LocalPlayer.Character:MoveTo(Mouse.Hit.p)
-                end
-            end)
-        end
-    end
+Rayfield:Notify({
+    Title = "Aether",
+    Content = "Exploit cargado correctamente.",
+    Duration = 5
 })
-
---// Final
-Fluent:Notify({ Title = "Aether", Content = "Exploit cargado correctamente." })
-print("Aether Universal Exploit - Loaded.")
